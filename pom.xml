@@ -144,6 +144,9 @@
            <contextPath>/${parent.artifactId}</contextPath>
          </webAppConfig>
          <scanIntervalSeconds>5</scanIntervalSeconds>
+         <stopPort>8100</stopPort>
+         <stopKey>quartz</stopKey>
+         <stopWait>10</stopWait>
         </configuration>
       </plugin>
       <plugin>
