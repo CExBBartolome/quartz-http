@@ -25,7 +25,20 @@ This will remove a previously scheduled job with the unique key of group::name. 
 
 Currently supports Http POST, JSON content and one single date to add to the schedule and DELETE with the group::name on the url to remote a scheduled job.
 
-# run server:
+# Run server:
+
+## With Docker:
+
+    docker pull cexbbartolome/quartz-http:latest
+    docker run --name quartz-http cexbbartolome/quartz-http
+    
+Will pull the docker image and create a container named ```quartz-http```
+
+    docker run -e HOST=127.0.0.1 -e PORT=8090 cexbbartolome/quartz-http:latest
+    
+Overrides the network interface (0.0.0.0) and port (8090) from the defaults (0.0.0.0:8080)
+
+## Without Docker
 
     mvn jetty:run
     
@@ -35,7 +48,7 @@ Will download, build, run the server on the default port 8080
 
 Will download, build, run the server on port 8090
 
-# compile war file to /target directory:
+# Compile war file to /target directory:
 
     mvn package 
     
