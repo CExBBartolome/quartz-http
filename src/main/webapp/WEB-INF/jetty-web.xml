@@ -12,7 +12,7 @@
     <Array type="java.lang.String">
       <Item>127.0.0.1</Item>
       <Item>localhost</Item>
-      <Item>www.yourdomain.com</Item>
+      <Item>_TARGETIP_</Item>
     </Array>
   </Set>
 </Configure>
