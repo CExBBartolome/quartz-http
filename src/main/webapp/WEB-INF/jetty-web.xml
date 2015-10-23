@@ -8,11 +8,4 @@
   <!--<Set name="contextPath">/</Set>-->
   <Set name="contextPath">/scheduler</Set>
   <Set name="war"><Property name="jetty.home"/>/target/scheduler.war</Set>
-  <Set name="virtualHosts">
-    <Array type="java.lang.String">
-      <Item>127.0.0.1</Item>
-      <Item>localhost</Item>
-      <Item>_TARGETIP_</Item>
-    </Array>
-  </Set>
 </Configure>
