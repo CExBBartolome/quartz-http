@@ -5,4 +5,6 @@ ENV PORT 8080
 
 EXPOSE $PORT
 
-CMD ["sh", "/usr/src/app/run.sh"]
+RUN ["mvn", "package"]
+RUN ["mvn", "jetty:start"]
+cmd mvn -Djetty.host=${HOST} -Djetty.port=${PORT} -e jetty:run
