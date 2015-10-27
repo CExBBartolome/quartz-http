@@ -50,7 +50,7 @@ Will download, build, run the server on port 8090
 
     mvn -Dorg.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX \
         -Dorg.quartz.jobStore.tablePrefix=QRTZ_ \
-        -Dorg.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.StdJDBCDelegate \
+        -Dorg.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate \
         -Dorg.quartz.jobStore.dataSource=qzDS \
         -Dorg.quartz.dataSource.qzDS.driver=org.postgresql.Driver \
         -Dorg.quartz.dataSource.qzDS.URL=jdbc:postgresql://localhost:5432/dbname \
