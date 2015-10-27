@@ -48,6 +48,19 @@ Will download, build, run the server on the default port 8080
 
 Will download, build, run the server on port 8090
 
+    mvn -Dorg.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX \
+        -Dorg.quartz.jobStore.tablePrefix=QRTZ_ \
+        -Dorg.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.PostgreSQLDelegate \
+        -Dorg.quartz.jobStore.dataSource=qzDS \
+        -Dorg.quartz.dataSource.qzDS.driver=org.postgresql.Driver \
+        -Dorg.quartz.dataSource.qzDS.URL=jdbc:postgresql://localhost:5432/dbname \
+        -Dorg.quartz.dataSource.qzDS.user=postgres \
+        -Dorg.quartz.dataSource.qzDS.password=secret \
+        -Dorg.quartz.dataSource.qzDS.maxConnections=30 \
+        -e jetty:run
+
+Will download, build, run the server, and persist jobs into the Postgres database specified
+
 # Compile war file to /target directory:
 
     mvn package 
@@ -61,3 +74,6 @@ Problem accessing /scheduler/api. Reason:
 HTTP method GET is not supported by this URL
 
 This is good and what you should expect from a GET. The URL will only support POST, PUT and DELETE.
+
+# CHANGELOG
+- Added JDBC drivers for PostgreSQL 9.4
