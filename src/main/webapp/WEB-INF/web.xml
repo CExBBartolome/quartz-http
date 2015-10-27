@@ -8,7 +8,7 @@
   <servlet>
     <servlet-name>API</servlet-name>
     <servlet-class>com.nearform.http.API</servlet-class>
-		<load-on-startup>1</load-on-startup>
+    <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
     <servlet-name>API</servlet-name>
