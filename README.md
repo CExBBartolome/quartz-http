@@ -76,4 +76,7 @@ HTTP method GET is not supported by this URL
 This is good and what you should expect from a GET. The URL will only support POST, PUT and DELETE.
 
 # CHANGELOG
+- Added `load-on-startup` entry in `web.xml`
 - Added JDBC drivers for PostgreSQL 9.4
+- Added slf4j for logging
+- Removed `virtualHosts` entry in `jetty-web.xml`
