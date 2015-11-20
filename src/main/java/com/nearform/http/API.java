@@ -145,7 +145,6 @@ public class API extends HttpServlet {
 			    }
 				if("html".equals(request.getParameter("contentType"))){
 					response.setContentType("text/html");
-					System.out.println(triggerListResponse.toHTMLTable());
 					Writer writer = new OutputStreamWriter(response.getOutputStream(), "UTF-8");
 					writer.write(triggerListResponse.toHTMLTable());
 					writer.flush();
