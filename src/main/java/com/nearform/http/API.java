@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.ServletException;
 
 import java.lang.Boolean;
+import java.nio.charset.Charset;
 import java.util.UUID;
 import java.util.Date;
 import java.io.IOException;
@@ -16,6 +17,9 @@ import java.io.InputStreamReader;
 //import org.eclipse.jetty.server.Request;
 //import org.eclipse.jetty.server.handler.AbstractHandler;
 
+
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 
 //import javax.servlet.*;
@@ -31,6 +35,7 @@ import org.quartz.TriggerKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
+import org.quartz.impl.matchers.GroupMatcher;
 
 import static org.quartz.JobBuilder.*;
 import static org.quartz.TriggerBuilder.*;
@@ -48,10 +53,15 @@ public class API extends HttpServlet {
 
 	public void init() throws ServletException {
 		try {
-			// The next line prevents failure when deserializing a JSON object that has
-			// more properties than we've defined in the class that we're deserializing
+			// The next line prevents failure when deserializing a JSON object
+			// that has
+			// more properties than we've defined in the class that we're
+			// deserializing
 			// the data into.
-			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			System.out
+					.println("asidjasjdklasdoisadu823eu329324324n324n32kj4n32j4n32434324234nkansdsandas");
+			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+					false);
 			scheduler = StdSchedulerFactory.getDefaultScheduler();
 			scheduler.start();
 		} catch (SchedulerException e) {
@@ -101,6 +111,54 @@ public class API extends HttpServlet {
 		System.out.println("POST: Creating a job end.");
 	}
 
+	// This is the r from Crud. Read an existing job or all jobs in the scheduler
+	@Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws IOException, ServletException {
+		System.out.println("GET: Creating a job start.");
+		
+		String path = request.getRequestURI();
+		String[] parts = path.split("/");
+
+		response.setContentType("application/json");
+		try{
+			//check for ID as 2nd last parameter to see if we want a specific job
+			if("id".equals(parts[parts.length - 2])){
+				String key = parts[parts.length - 1];
+				JobDataId jobDataId = new JobDataId();
+				jobDataId.setJobId(key);
+					JobKey jobKey = new JobKey(jobDataId
+							.getJobName(), jobDataId.getGroup());
+					Trigger trigger = scheduler.getTriggersOfJob(jobKey).get(0);
+					
+					mapper.writeValue(response.getOutputStream(), new TriggerResponse(trigger.getNextFireTime(), jobDataId.getJobId()));
+					
+			}else{
+				//List all scheduled jobs
+				TriggerListResponse triggerListResponse = new TriggerListResponse();
+				for (String groupName : scheduler.getJobGroupNames()) {
+			     for (JobKey jobKey : scheduler.getJobKeys(GroupMatcher.jobGroupEquals(groupName))) {
+			    	 Trigger trigger = scheduler.getTriggersOfJob(jobKey).get(0);
+			    	 String key = jobKey.getGroup() +  JobDataId.groupDelimiter + trigger.getKey() + JobDataId.triggerJobDelimiter + jobKey.getName();
+			    	 triggerListResponse.addTrigger(new TriggerResponse(trigger.getNextFireTime(), key));
+				  }
+			    }
+				if("html".equals(request.getParameter("contentType"))){
+					response.setContentType("text/html");
+					System.out.println(triggerListResponse.toHTMLTable());
+					Writer writer = new OutputStreamWriter(response.getOutputStream(), "UTF-8");
+					writer.write(triggerListResponse.toHTMLTable());
+					writer.flush();
+					writer.close();
+				}else{
+					mapper.writeValue(response.getOutputStream(), triggerListResponse);
+				}
+			}
+		}catch(Exception e){
+			mapper.writeValue(response.getOutputStream(), new ErrorResponse(e));
+		}
+	}
+	
 	// This is the U from crUd. Update an existing job in the scheduler
 	public void doPut(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
@@ -136,13 +194,13 @@ public class API extends HttpServlet {
 	}
 
 	// This is the D from cruD. Delete a job from the scheduler
-	public void doDelete(HttpServletRequest request, HttpServletResponse response)
-			throws IOException, ServletException {
+	public void doDelete(HttpServletRequest request,
+			HttpServletResponse response) throws IOException, ServletException {
 		System.out.println("DELETE: Canceling a job start.");
 
 		String path = request.getRequestURI();
 		String[] parts = path.split("/");
-		String key = parts[parts.length-1];
+		String key = parts[parts.length - 1];
 
 		System.out.println("key to delete: " + key);
 
@@ -152,7 +210,7 @@ public class API extends HttpServlet {
 		response.setContentType("application/json");
 
 		ScheduleResponse responseContent = unschedule(jobDataId);
-		if("false".equals(responseContent.getKey())) {
+		if ("false".equals(responseContent.getKey())) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 		}
 		mapper.writeValue(response.getOutputStream(), responseContent);
@@ -164,20 +222,22 @@ public class API extends HttpServlet {
 		System.out.println(jobData);
 
 		// Add the new job to the scheduler, instructing it to "replace"
-		//  the existing job with the given name and group (if any)
+		// the existing job with the given name and group (if any)
 		JobDetail job = newJob(HttpJob.class)
-			    .withIdentity(jobDataId.getJobName(), jobDataId.getGroup())
+				.withIdentity(jobDataId.getJobName(), jobDataId.getGroup())
 				.usingJobData("url", jobData.getUrl())
 				.usingJobData("payload", jobData.getPayload()).build();
 
-		// addJob(JobDetail jobDetail, boolean replace, boolean storeNonDurableWhileAwaitingScheduling)
-        // Add the given Job to the Scheduler - with no associated Trigger.
+		// addJob(JobDetail jobDetail, boolean replace, boolean
+		// storeNonDurableWhileAwaitingScheduling)
+		// Add the given Job to the Scheduler - with no associated Trigger.
 		scheduler.addJob(job, true, true);
 
 		// Now adjust the trigger to the new time.
 		Date startTime = new Date(jobData.getTimestamp());
 
-		Trigger oldTrigger = scheduler.getTrigger(TriggerKey.triggerKey(jobDataId.getTriggerName(), jobDataId.getGroup()));
+		Trigger oldTrigger = scheduler.getTrigger(TriggerKey.triggerKey(
+				jobDataId.getTriggerName(), jobDataId.getGroup()));
 
 		Trigger newTrigger = newTrigger()
 				.withIdentity(jobDataId.getTriggerName(), jobDataId.getGroup())
@@ -211,7 +271,9 @@ public class API extends HttpServlet {
 
 		TriggerKey triggerKey = trigger.getKey();
 		ScheduleResponse response = new ScheduleResponse();
-		response.setKey(triggerKey.getGroup() + JobDataId.groupDelimiter + triggerKey.getName() + JobDataId.triggerJobDelimiter + job.getKey().getName());
+		response.setKey(triggerKey.getGroup() + JobDataId.groupDelimiter
+				+ triggerKey.getName() + JobDataId.triggerJobDelimiter
+				+ job.getKey().getName());
 
 		System.out.println("Scheduling job " + startTime);
 
@@ -224,29 +286,25 @@ public class API extends HttpServlet {
 		response.setKey("false");
 		try {
 			// JobKey takes a name as first param and group as second param
-			// We've stored it the other way around so reference the array "backwards"
-			boolean deleted = scheduler.deleteJob(new JobKey(jobDataId.getJobName(), jobDataId.getGroup()));
+			// We've stored it the other way around so reference the array
+			// "backwards"
+			boolean deleted = scheduler.deleteJob(new JobKey(jobDataId
+					.getJobName(), jobDataId.getGroup()));
 			response.setKey(Boolean.toString(deleted));
-			if(deleted == true) {
+			if (deleted == true) {
 				System.out.println("Canceled job: " + jobDataId.getJobName());
 			} else {
-				System.out.println("Failed to cancel job: " + jobDataId.getJobName());
+				System.out.println("Failed to cancel job: "
+						+ jobDataId.getJobName());
 			}
 
 			return response;
 		} catch (SchedulerException e) {
-			System.out.println("Failed to cancel job: " + jobDataId.getJobName());
+			System.out.println("Failed to cancel job: "
+					+ jobDataId.getJobName());
 			e.printStackTrace();
 		}
 		return response;
 	}
 
-/*	public static void main(String[] args) throws Exception {
-		Server server = new Server(8080);
-
-		server.setHandler(new API());
-
-		server.start();
-		server.join();
-	}*/
 }
